@@ -7,15 +7,15 @@ import (
 	"fmt"
 	"strings"
 
+	"github.com/NVIDIA/KAI-scheduler/pkg/scheduler/k8s_internal"
 	v1 "k8s.io/api/core/v1"
 	"k8s.io/apimachinery/pkg/api/resource"
-
-	"github.com/NVIDIA/KAI-scheduler/pkg/scheduler/k8s_internal"
 )
 
 const (
-	GPUResourceName    = "nvidia.com/gpu"
+	GPUResourceName    = "mthreads.com/gpu" // TODO change to mthreads.com/gpu
 	amdGpuResourceName = "amd.com/gpu"
+	// mthreadsGpuResourceName = "mthreads.com/gpu"
 )
 
 type ResourceRequirements struct {

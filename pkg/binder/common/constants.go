@@ -4,9 +4,10 @@
 package common
 
 const (
-	NvidiaVisibleDevices = "NVIDIA_VISIBLE_DEVICES"
-	RunaiVisibleDevices  = "RUNAI-VISIBLE-DEVICES"
-	RunaiNumOfGpus       = "RUNAI_NUM_OF_GPUS"
-	ReceivedTypeFraction = "Fraction"
-	ReceivedTypeRegular  = "Regular"
+	NvidiaVisibleDevices   = MthreadsVisibleDevices
+	MthreadsVisibleDevices = "MTHREADS_VISIBLE_DEVICES"
+	RunaiVisibleDevices    = "RUNAI-VISIBLE-DEVICES"
+	RunaiNumOfGpus         = "RUNAI_NUM_OF_GPUS"
+	ReceivedTypeFraction   = "Fraction"
+	ReceivedTypeRegular    = "Regular"
 )

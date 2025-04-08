@@ -81,8 +81,8 @@ func CreateNodeObject(ctx context.Context, c client.Client, config NodeConfig) *
 
 	// Add GPU resources if applicable
 	if config.GPUs > 0 {
-		node.Status.Capacity["nvidia.com/gpu"] = *resource.NewQuantity(int64(config.GPUs), resource.DecimalSI)
-		node.Status.Allocatable["nvidia.com/gpu"] = *resource.NewQuantity(int64(config.GPUs), resource.DecimalSI)
+		node.Status.Capacity["mthreads.com/gpu"] = *resource.NewQuantity(int64(config.GPUs), resource.DecimalSI)
+		node.Status.Allocatable["mthreads.com/gpu"] = *resource.NewQuantity(int64(config.GPUs), resource.DecimalSI)
 	}
 
 	return node

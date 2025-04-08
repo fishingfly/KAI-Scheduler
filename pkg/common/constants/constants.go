@@ -4,8 +4,9 @@
 package constants
 
 const (
-	AppLabelName              = "app"
-	GpuResource               = "nvidia.com/gpu"
+	AppLabelName = "app"
+	GpuResource  = "mthreads.com/gpu" // TODO  maybe can be changed to "mthreads.com/gpu"
+	// MthreadsGpuResource       = "mthreads.com/gpu"
 	ScalingPodAppLabelValue   = "scaling-pod"
 	UnlimitedResourceQuantity = float64(-1)
 	DefaultQueuePriority      = 100
@@ -32,7 +33,7 @@ const (
 	MultiGpuGroupLabelPrefix = GPUGroup + "/"
 	MigEnabledLabel          = "node-role.kubernetes.io/runai-mig-enabled"
 	MigStrategyLabel         = "nvidia.com/mig.strategy"
-	GpuCountLabel            = "nvidia.com/gpu.count"
+	GpuCountLabel            = "mthreads.com/gpu.count"
 	QueueLabelKey            = "runai/queue"
 
 	// Namespaces

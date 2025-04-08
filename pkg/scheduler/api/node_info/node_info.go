@@ -29,8 +29,8 @@ import (
 
 const (
 	DefaultGpuMemory = 100 // The default value is 100 because it allows all the calculation of (memory = fractional * GpuMemory) to work, if it was 0 the result will always be zero too
-	GpuMemoryLabel   = "nvidia.com/gpu.memory"
-	GpuCountLabel    = "nvidia.com/gpu.count"
+	GpuMemoryLabel   = "mthreads.com/gpu.memory"
+	GpuCountLabel    = "mthreads.com/gpu.count"
 	CpuWorkerNode    = "node-role.kubernetes.io/runai-cpu-worker"
 	GpuWorkerNode    = "node-role.kubernetes.io/runai-gpu-worker"
 	MbToBRatio       = 1000000
@@ -193,7 +193,8 @@ func (ni *NodeInfo) isTaskStorageAllocatable(task *pod_info.PodInfo) (bool, erro
 }
 
 func isTaskStorageAllocatableOnCapacities(pvcs []*storageclaim_info.StorageClaimInfo,
-	capacities []*sc_info.StorageCapacityInfo) bool {
+	capacities []*sc_info.StorageCapacityInfo,
+) bool {
 	for _, capacity := range capacities {
 		// We don't know on each capacity the pvcs will allocate, so we check that it's possible on any of the capacities
 		err := capacity.ArePVCsAllocatable(pvcs)
@@ -354,7 +355,8 @@ func (ni *NodeInfo) addTask(task *pod_info.PodInfo, allowTaskToExistOnDifferentG
 }
 
 func (ni *NodeInfo) AddTasksToNode(podInfos []*pod_info.PodInfo,
-	existingPodsMap map[common_info.PodID]*pod_info.PodInfo) (resultPods []*v1.Pod) {
+	existingPodsMap map[common_info.PodID]*pod_info.PodInfo,
+) (resultPods []*v1.Pod) {
 	resultPods = []*v1.Pod{}
 
 	for _, podInfo := range podInfos {
@@ -510,7 +512,6 @@ func (ni *NodeInfo) String() string {
 
 	return fmt.Sprintf("Node (%s): idle <%v>, used <%v>, releasing <%v>, taints <%v>%s",
 		ni.Name, ni.Idle, ni.Used, ni.Releasing, ni.Node.Spec.Taints, res)
-
 }
 
 func (ni *NodeInfo) GetSumOfIdleGPUs() (float64, int64) {
@@ -554,7 +555,7 @@ func (ni *NodeInfo) GetSumOfReleasingGPUs() (float64, int64) {
 func (ni *NodeInfo) getNodeGpuCountLabelValue() (int, error) {
 	gpuCountLabelValue, found := ni.Node.Labels[GpuCountLabel]
 	if !found {
-		return -1, &common_info.NotFoundError{Name: fmt.Sprintf("node %s nvidia.com/gpu.count label", ni.Name)}
+		return -1, &common_info.NotFoundError{Name: fmt.Sprintf("node %s mthreads.com/gpu.count label", ni.Name)}
 	}
 
 	gpuCount, err := strconv.Atoi(gpuCountLabelValue)
@@ -568,7 +569,7 @@ func (ni *NodeInfo) getNodeGpuCountLabelValue() (int, error) {
 func (ni *NodeInfo) GetNumberOfGPUsInNode() int64 {
 	numberOfGPUs, err := ni.getNodeGpuCountLabelValue()
 	if err != nil {
-		log.InfraLogger.V(6).Infof("Node: <%v> had no annotations of nvidia.com/gpu.count", ni.Name)
+		log.InfraLogger.V(6).Infof("Node: <%v> had no annotations of mthreads.com/gpu.count", ni.Name)
 		return int64(ni.Allocatable.GPUs)
 	}
 	return int64(numberOfGPUs)
@@ -681,8 +682,7 @@ func (ni *NodeInfo) setAcceptedResources(pi *pod_info.PodInfo) {
 	pi.AcceptedResource = pi.ResReq.Clone()
 	if pi.IsMigCandidate() {
 		pi.ResourceReceivedType = pod_info.ReceivedTypeMigInstance
-		pi.AcceptedResource.GpuResourceRequirement =
-			*resource_info.NewGpuResourceRequirementWithMig(pi.ResReq.MIGResources)
+		pi.AcceptedResource.GpuResourceRequirement = *resource_info.NewGpuResourceRequirementWithMig(pi.ResReq.MIGResources)
 	} else if pi.IsFractionCandidate() {
 		pi.ResourceReceivedType = pod_info.ReceivedTypeFraction
 		pi.AcceptedResource.GpuResourceRequirement = *resource_info.NewGpuResourceRequirementWithMultiFraction(

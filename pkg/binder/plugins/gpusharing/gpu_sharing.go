@@ -23,7 +23,7 @@ import (
 
 const (
 	fractionContainerIndex = 0
-	CdiDeviceNameBase      = "k8s.device-plugin.nvidia.com/gpu=%s"
+	CdiDeviceNameBase      = "k8s.device-plugin.mthreads.com/gpu=%s"
 )
 
 type GPUSharing struct {

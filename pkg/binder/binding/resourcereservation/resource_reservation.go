@@ -10,6 +10,9 @@ import (
 	"strings"
 	"time"
 
+	"github.com/NVIDIA/KAI-scheduler/pkg/binder/binding/resourcereservation/group_mutex"
+	"github.com/NVIDIA/KAI-scheduler/pkg/common/constants"
+	"github.com/NVIDIA/KAI-scheduler/pkg/common/resources"
 	"golang.org/x/exp/slices"
 	v1 "k8s.io/api/core/v1"
 	"k8s.io/apimachinery/pkg/api/resource"
@@ -19,10 +22,6 @@ import (
 	"sigs.k8s.io/controller-runtime/pkg/client"
 	"sigs.k8s.io/controller-runtime/pkg/log"
 	karpenterv1 "sigs.k8s.io/karpenter/pkg/apis/v1"
-
-	"github.com/NVIDIA/KAI-scheduler/pkg/binder/binding/resourcereservation/group_mutex"
-	"github.com/NVIDIA/KAI-scheduler/pkg/common/constants"
-	"github.com/NVIDIA/KAI-scheduler/pkg/common/resources"
 )
 
 type Interface interface {
@@ -218,7 +217,8 @@ func (rsc *service) ReserveGpuDevice(ctx context.Context, pod *v1.Pod, nodeName 
 }
 
 func (rsc *service) updatePodGPUGroup(
-	ctx context.Context, pod *v1.Pod, nodeName string, gpuGroup string) error {
+	ctx context.Context, pod *v1.Pod, nodeName string, gpuGroup string,
+) error {
 	logger := log.FromContext(ctx)
 	logger.Info("Updating GPU group annotation for pod",
 		"namespace", pod.Namespace, "name", pod.Name, "node", nodeName,
@@ -320,7 +320,8 @@ func (rsc *service) findGPUIndexByGroup(gpuGroup string) (
 }
 
 func (rsc *service) createGPUReservationPodAndGetIndex(ctx context.Context, nodeName, gpuGroup string) (
-	gpuIndex string, err error) {
+	gpuIndex string, err error,
+) {
 	logger := log.FromContext(ctx)
 	pod, err := rsc.createGPUReservationPod(ctx, nodeName, gpuGroup)
 	if err != nil {
@@ -381,6 +382,7 @@ func (rsc *service) createGPUReservationPod(ctx context.Context, nodeName, gpuGr
 
 	resources := v1.ResourceRequirements{
 		Limits: v1.ResourceList{
+			// constants.GpuResource: *resource.NewQuantity(numberOfGPUsToReserve, resource.DecimalSI),
 			constants.GpuResource: *resource.NewQuantity(numberOfGPUsToReserve, resource.DecimalSI),
 		},
 	}
@@ -455,7 +457,7 @@ func (rsc *service) createResourceReservationPod(
 				{
 					Name:            resourceReservation,
 					Image:           rsc.reservationPodImage,
-					ImagePullPolicy: v1.PullIfNotPresent,
+					ImagePullPolicy: v1.PullAlways,
 					Resources:       resources,
 					Env: []v1.EnvVar{
 						{
